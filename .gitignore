@@ -1,0 +1,7 @@
+*.pyc
+docs/_build/
+.DS_Store
+dist/*
+django_vola.egg-info/*
+fabfile.py
+.sass-cache
