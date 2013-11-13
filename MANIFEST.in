@@ -1,0 +1,6 @@
+include AUTHORS
+include README.rst
+include LICENSE
+recursive-include docs *
+recursive-include vola/static *
+recursive-include vola/templates *
