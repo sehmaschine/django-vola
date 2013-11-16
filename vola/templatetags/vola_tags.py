@@ -6,7 +6,7 @@ from django import template
 register = template.Library()
 
 # PROJECT IMPORTS
-from vola.models import Container, Group, Plugin
+from vola.models import Language, Category, Container, Group, Plugin
 
 
 @register.assignment_tag(takes_context=True)
