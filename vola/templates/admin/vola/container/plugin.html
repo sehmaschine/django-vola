@@ -1,0 +1,119 @@
+{% load url from future %}
+{% load admin_static i18n grp_tags %}
+
+{{ pluginmedia }}
+{{ adminform.media }}
+
+<div id="{{ adminform.prefix }}-group" class="grp-module {{ adminform.inline_classes|join:" "|default:"grp-collapse grp-open" }}{% if adminform.original %} has_original{% endif %} grp-dynamic-form">
+    <h2 class="grp-collapse-handler">{{ adminform.verbose_name }}{% if adminform.original %}<span style="font-weight: normal; display: inline-block !important;">{{ adminform.original }}</span>{% endif %}</h2>
+    <ul class="grp-tools">
+        {% if adminform.sortable_field_name %}
+            <li><a href="javascript://" class="grp-icon grp-drag-handler" title="{% trans 'Move Item' %}"></a></li>
+        {% endif %}
+        {% if adminform.original %}
+            {% if adminform.can_delete %}
+                <li class="grp-delete-handler-container"><input type="text" name="{{ adminform.prefix }}-DELETE" value="{{ adminform.delete }}" /><a href="javascript://" class="grp-icon grp-delete-handler" title="{% trans 'Delete Plugin' %}"></a></li>
+            {% else %}
+                <li><span class="grp-icon">&nbsp;</span></li>
+            {% endif %}
+            {% comment %}{% if adminform.original.lock_content %}<li><a href="javascript://" class="grp-icon grp-lock-handler"></a></li>{% endif %}{% endcomment %}
+        {% else %}
+            <li><a href="javascript://" class="grp-icon grp-remove-handler" title="{% trans 'Remove Plugin' %}"></a></li>
+        {% endif %}
+    </ul>
+    {% if adminform.non_field_errors %}
+        {{ adminform.non_field_errors }}
+    {% endif %}
+    {% for fieldset in adminform %}
+        {% include "admin/includes/fieldset_inline.html" %}
+    {% endfor %}
+    <!-- additional plugin fields -->
+    <input type="hidden" name="{{ adminform.prefix }}-app_label" value="{{ adminform.app_label }}" />
+    <input type="hidden" name="{{ adminform.prefix }}-model_name" value="{{ adminform.model_name }}" />
+</div>
+
+<script type="text/javascript">
+(function($) {
+    $(document).ready(function() {
+        var prefix = "{{ adminform.prefix }}";
+        var related_lookup_fields_fk = {% get_related_lookup_fields_fk adminform.model_admin %};
+        var related_lookup_fields_m2m = {% get_related_lookup_fields_m2m adminform.model_admin %};
+        var related_lookup_fields_generic = {% get_related_lookup_fields_generic adminform.model_admin %};
+        var autocomplete_fields_fk = {% get_autocomplete_lookup_fields_fk adminform.model_admin %};
+        var autocomplete_fields_m2m = {% get_autocomplete_lookup_fields_m2m adminform.model_admin %};
+        var autocomplete_fields_generic = {% get_autocomplete_lookup_fields_generic adminform.model_admin %};
+        $.each(related_lookup_fields_fk, function() {
+            $("#{{ adminform.prefix }}-group").find("#id_{{ adminform.prefix }}-" + this).grp_related_fk({lookup_url:"{% url 'grp_related_lookup' %}"});
+        });
+        $.each(related_lookup_fields_m2m, function() {
+            $("#{{ adminform.prefix }}-group").find("#id_{{ adminform.prefix }}-" + this).grp_related_m2m({lookup_url:"{% url 'grp_m2m_lookup' %}"});
+        });
+        $.each(related_lookup_fields_generic, function() {
+            var content_type = "#id_{{ adminform.prefix }}-" + this[0],
+                object_id = "#id_{{ adminform.prefix }}-" + this[1];
+            $(object_id).grp_related_generic({content_type:content_type, object_id:object_id, lookup_url:"{% url 'grp_related_lookup' %}"});
+        });
+        $.each(autocomplete_fields_fk, function() {
+            $("#{{ adminform.prefix }}-group").find("#id_{{ adminform.prefix }}-" + this).grp_autocomplete_fk({
+                lookup_url:"{% url 'grp_related_lookup' %}",
+                autocomplete_lookup_url:"{% url 'grp_autocomplete_lookup' %}"
+            });
+        });
+        $.each(autocomplete_fields_m2m, function() {
+            $("#{{ adminform.prefix }}-group").find("#id_{{ adminform.prefix }}-" + this).grp_autocomplete_m2m({
+                lookup_url:"{% url 'grp_m2m_lookup' %}",
+                autocomplete_lookup_url:"{% url 'grp_autocomplete_lookup' %}"
+            });
+        });
+        $.each(autocomplete_fields_generic, function() {
+            var content_type = "#id_{{ adminform.prefix }}-" + this[0],
+                object_id = "#id_{{ adminform.prefix }}-" + this[1];
+            $(object_id).grp_autocomplete_generic({
+                content_type:content_type,
+                object_id:object_id,
+                lookup_url:"{% url 'grp_related_lookup' %}",
+                autocomplete_lookup_url:"{% url 'grp_autocomplete_lookup' %}"
+            });
+        });
+
+        // REMOVE HANDLER
+        $("a.grp-remove-handler").bind("click", function() {
+            var form = $(this).parents(".grp-dynamic-form").first();;
+            form.remove();
+        });
+
+        // DELETE HANDLER is defined with changeform
+
+        // COLLAPSIBLES
+        $("#{{ adminform.prefix }}-group.grp-collapse").grp_collapsible({
+            on_init: function(elem, options) {
+                // open collapse (and all collapse parents) in case of errors
+                if (elem.find("ul.errorlist").length > 0) {
+                    elem.removeClass("grp-closed")
+                        .addClass("grp-open");
+                    elem.parents(".grp-collapse")
+                        .removeClass("grp-closed")
+                        .addClass("grp-open");
+                }
+            }
+        });
+
+        // LOCK CONTENT
+        // FIXME: this should additionally be checked with saving the model
+        // {% if adminform.original.lock_content %}
+        // $("#{{ adminform.prefix }}-group.has_original").find(":input").each(function(){
+        //     $(this).attr("readonly", "readonly");
+        // });
+        // {% endif %}
+
+        // LOCK POSITION
+        // FIXME: this should additionally be checked with saving the model
+        // {% if adminform.original.lock_position %}
+        // $("#{{ adminform.prefix }}-group.has_original").find(":input").each(function(){
+        //     $(this).attr("readonly", "readonly");
+        // });
+        // {% endif %}
+
+    });
+})(grp.jQuery);
+</script>

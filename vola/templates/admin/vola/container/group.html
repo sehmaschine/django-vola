@@ -1,0 +1,259 @@
+{% extends "admin/base_site.html" %}
+
+<!-- LOADING -->
+{% load url from future %}
+{% load admin_static i18n admin_modify admin_urls grp_tags vola_admin_tags %}
+
+<!-- STYLESHEETS -->
+{% block stylesheets %}
+    {{ block.super }}
+    <link href="/static/vola/css/vola.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+<!-- JAVASCRIPTS -->
+{% block javascripts %}
+    {{ block.super }}
+    {% url 'admin:jsi18n' as jsi18nurl %}
+    <script type="text/javascript" src="{{ jsi18nurl|default:'../../../jsi18n/' }}"></script>
+    <script type="text/javascript" charset="utf-8">
+        (function($) {
+            $(document).ready(function() {
+                grappelli.initDateAndTimePicker();
+                $("a#grp-open-all").bind("click", function(){
+                    $("#grp-content .grp-collapse-handler").each(function() {
+                        $(this).parent(".grp-collapse").removeClass("grp-closed").addClass("grp-open");
+                    });   
+                });
+                $("a#grp-close-all").bind("click", function(){
+                    $("#grp-content .grp-collapse-handler").each(function() {
+                        $(this).parent(".grp-collapse").removeClass("grp-open").addClass("grp-closed");
+                    });
+                });
+                // NAVBAR DROPDOWN
+                $("a.grp-navbar-dropdown-handler").bind("click", function(){
+                    $(this).closest('.grp-navbar-dropdown').toggleClass('grp-navbar-open');
+                    event.preventDefault();
+                });
+                // HACK: get rid of currently/change with URL–fields. F**K!!!
+                $('p.url').each(function() {
+                    $(this).find("a").remove();
+                    var text = $(this).html();
+                    text = text.replace(/^\w*: /, "");
+                    text = text.replace(/<br>.*: /, "");
+                    $(this).html(text);
+                });
+                // GET PLUGINS
+                $("select.action").change(function(){
+                    var href = $(this).val();
+                    var container = $("div#plugins");
+                    var items = $(container).find("div.grp-dynamic-form");
+                    var plugins_counter = $(items).size()+1;
+                    var extraforms_counter = $("input.extraforms_counter").val();
+                    // reset selection
+                    $(this).val("");
+                    if (href) {
+                        $.ajax({
+                            url: href,
+                            data: {c: plugins_counter},
+                            dataType: 'html',
+                            beforeSend: function (XMLHttpRequest) {
+                                // FIXME: show loader
+                            },
+                            success: function(data){
+                                // FIXME: hide loader
+                                container.append(data);
+                            },
+                            complete: function (XMLHttpRequest, textStatus) {
+                                $("input.extraforms_counter").val(parseInt(extraforms_counter)+1);
+                            }
+                        });
+                    }
+                    return false;
+                });
+                // DELETE
+                // add options.predeleteCssClass to forms with the delete checkbox checked
+                $(".grp-dynamic-form").find("li.grp-delete-handler-container input").each(function() {
+                    var form = $(this).parents(".grp-dynamic-form").first();
+                    if ($(this).val() == "1" && form.hasClass("has_original")) {
+                        form.toggleClass("grp-predelete");
+                    }
+                });
+                // DELETE HANDLER
+                $("a.grp-delete-handler").bind("click", function() {
+                    var deleteInput = $(this).prev(),
+                        form = $(this).parents(".grp-dynamic-form").first();
+                    if (form.hasClass("has_original")) {
+                        form.toggleClass("grp-predelete");
+                        console.log(deleteInput.val()); 
+                        if (deleteInput.val() == 0) {
+                            deleteInput.val(1);
+                        } else if (deleteInput.val() == 1) {
+                            deleteInput.val(0);
+                        }                  
+                    }
+                });
+                // SORTABLES
+                $("div#plugins").sortable({
+                    handle: "a.grp-drag-handler",
+                    items: "div.grp-dynamic-form",
+                    axis: "y",
+                    appendTo: 'body',
+                    forceHelperSize: true,
+                    placeholder: 'grp-module ui-sortable-placeholder',
+                    forcePlaceholderSize: true,
+                    containment: 'parent',
+                    tolerance: 'pointer',
+                    start: function(evt, ui) {
+                        ui.placeholder.height(ui.item.height() + 12);
+                    }
+                });
+                $("#{{ opts.module_name }}_form").bind("submit", function(){
+                    var sortable_field_name = "position",
+                        i = 0;
+                    $("div.grp-dynamic-form").each(function(){
+                        // every position gets updated (no initial extra forms, no sortable_excludes)
+                        $(this).find("input[name$='"+sortable_field_name+"']").val(i);
+                        i++;
+                    });
+                });
+            });
+        })(grp.jQuery);
+    </script>
+    {{ media }}
+{% endblock %}
+
+<!-- COLTYPE/BODYCLASS -->
+{% block bodyclass %}{{ opts.app_label }}-{{ opts.object_name.lower }} grp-change-form{% endblock %}
+{% block content-class %}{% endblock %}
+
+{% block content_title %}
+    <h1>
+        {{ original }}{% if original.preview %}<span class="preview">&mdash;{% trans "Preview" %}</span>{% endif %}
+    </h1>
+{% endblock %}
+
+<!-- PAGE-TOOLS -->
+{% block page-tools %}
+    <ul>
+        <li><a href="javascript://" class="grp-tool" id="grp-open-all" title="{% trans 'Open All Items' %}">&nbsp;</a></li>
+        <li><a href="javascript://" class="grp-tool" id="grp-close-all" title="{% trans 'Close All Items' %}">&nbsp;</a></li>
+    </ul>
+{% endblock %}
+
+<!-- BREADCRUMBS -->
+{% block breadcrumbs %}
+    <ul>
+        <li><a href="{% url 'admin:index' %}">{% trans "Home" %}</a></li>
+        <li><a href="{% url 'admin:app_list' app_label=opts.app_label %}">{% trans app_label|capfirst|escape %}</a></li>
+        <li>{% if has_change_permission %}<a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %}</li>
+        <li>{{ original|truncatewords:"18" }}</li>
+    </ul>
+{% endblock %}
+
+<!-- OBJECT TOOLS -->
+{% block object-tools %}
+    <ul class="grp-object-tools">
+        <!-- History -->
+        <li><a href="{% url opts|admin_urlname:'history' original.id %}">{% trans "History" %}</a></li>
+        <!-- View on Site -->
+        {% if original.page_url %}{% vola_get_page_url as page_url %}{% if page_url %}
+            <li><a href="{{ page_url }}" class="grp-state-focus" target="_blank">{% trans "View on site" %}</a></li>
+        {% endif %}{% endif %}
+        <!-- Show Preview -->
+        {% if original.preview and original.page_url %}{% vola_get_preview_url as preview_url %}{% if preview_url %}
+            <li><a href="{{ preview_url }}" class="grp-state-focus" target="_blank">{% trans "Show Preview" %}</a></li>
+        {% endif %}{% endif %}
+        <!-- Make Preview -->
+        {% if not original.preview and has_preview_permission %}
+            <li><a class="grp-add-link grp-state-focus" href="{% url opts|admin_urlname:'make_preview' original.id %}">{% trans "Make Preview" %}</a>
+        {% endif %}
+        <!-- Transfer PReview -->
+        {% if original.preview and has_preview_permission %}
+            <li><a class="grp-state-focus" href="{% url opts|admin_urlname:'transfer_preview' original.id %}">{% trans "Transfer Preview" %}</a>
+        {% endif %}
+    </ul>
+{% endblock %}
+
+<!-- OBJECT LANGUAGES -->
+{% block pretitle %}
+    {% if original %}
+        <ul class="grp-object-languages">
+            {% for item in languages %}
+            <li{% if item.name == language %} class="grp-selected"{% endif %}><a href="?lang={{ item }}">{{ item }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}
+
+<!-- CONTENT -->
+{% block content %}
+    <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="." method="post" id="{{ opts.module_name }}_form">{% csrf_token %}{% block form_top %}{% endblock %} 
+        <div>
+
+            <!-- Errors -->
+            {% if errors %}
+                <p class="errornote">
+                    {% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
+                </p>
+            {% endif %}
+
+            <!-- Groups -->
+            <nav class="grp-navbar">
+                <ul>
+                    {% for item in groups %}
+                        <li class="{% if item == group %}grp-selected{% endif %}">
+                            <a href="../{{ item.id }}/{% if language %}?lang={{ language }}{% endif %}">{{ item }} <span class="grp-badge grp-counter" style="display: none;">{{ item.plugins.count }}</span></a>
+                        </li>
+                    {% endfor %}
+                    {% if groups_additional %}
+                        <li class="grp-navbar-dropdown">
+                            <a href="javascript://" class="grp-navbar-dropdown-handler">...</a>
+                            <ul class="grp-navbar-dropdown-menu">
+                                {% for item in groups_additional %}
+                                    <li><a href="">{{ item }} <span class="grp-badge grp-counter" style="display: none;">42</span></a></li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endif %}
+                    {% if has_container_permission or has_preview_permission %}
+                        <li class="grp-float-right">
+                            <a href="{% url opts|admin_urlname:'change' original.id %}">{% trans "Settings" %}</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            <!-- Plugins -->
+            {% if has_plugins_permission %}
+            <div id="plugins">
+                {% for adminform in pluginadminforms|formsetsort:"position" %}
+                    {% include "admin/vola/container/plugin.html" %}
+                {% endfor %}
+            </div>
+
+            <!-- Additional plugin fields -->
+            <input type="hidden" class="extraforms_counter" name="extraforms_counter" class="vIntegerField" value="{{ extraforms_counter }}" />
+            
+            <!-- Footer: Plugin selection, Submit-Row -->
+            <footer class="grp-module grp-submit-row grp-fixed-footer" id="submit">
+                <header style="display:none"><h1>{% trans "Submit Options" %}</h1></header>
+                <ul>
+                    <li class="grp-float-left grp-changelist-actions">
+                        <div class="grp-changelist-actions">
+                            <select class="action" autocomplete="off">
+                                <option selected="selected" value="">{% trans "Select Plugin" %}</option>
+                                {% for item in plugins %}
+                                    <option value="../../../../../{{ item.app_label }}/{{ item.model_name }}/add/?s={{ group.id }}">{{ item.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </li>
+                    <li><input type="submit" name="_save" class="grp-button grp-default" value="Sichern"></li>
+                    <li><input type="submit" name="_continue" class="grp-button" value="Sichern und weiter editieren"></li>
+                </ul>
+            </footer>
+            {% endif %}
+            
+        </div>
+    </form>
+{% endblock %}
