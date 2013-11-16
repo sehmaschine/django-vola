@@ -2,6 +2,7 @@
 
 # PYTHON IMPORTS
 import datetime
+import re
 
 # DJANGO IMPORTS
 from django.db import models
@@ -82,6 +83,10 @@ class Container(models.Model):
     slug = models.SlugField(_("Slug"), max_length=200, unique=True)
     cache_key = models.SlugField(_("Cache Key"), max_length=200, unique=True) # not editable
     category = models.ForeignKey(Category, related_name="containers", blank=True, null=True)
+    description = models.TextField(_("Description"), blank=True) # currently not used
+
+    # page url
+    page_url = models.CharField(_("Page URL"), max_length=200, blank=True)
 
     # preview/transfer
     preview = models.BooleanField(_("Preview")) # not editable
@@ -100,7 +105,7 @@ class Container(models.Model):
     class Meta:
         verbose_name = _("Container")
         verbose_name_plural = _("Containers")
-        ordering = ["name", "-preview"]
+        ordering = ["category", "name", "-preview"]
 
     def __str__(self):
         return "%s" % self.name
@@ -109,13 +114,20 @@ class Container(models.Model):
         return u"%s" % self.name
 
     def save(self, *args, **kwargs):
-        if self.slug: self.cache_key = self.slug
+        initial_group = kwargs.pop("initial_group", True)
+        if self.slug:
+            self.cache_key = self.slug
         super(Container, self).save(*args, **kwargs)
-        if self.preview: self.transfer_container = self
-        if not self.preview: self.transfer_date = self.transfer_container = None
+        if self.preview:
+            self.transfer_container = self
+        if not self.preview:
+            self.transfer_date = self.transfer_container = None
+        if initial_group and not self.groups.all():
+            Group.objects.create(container=self, name=_("Plugins"), slug="plugins", menu=True, position=0)
 
 # cache callback
 # post_save.connect(cache_callback, sender=Container)
+
 
 class Group(models.Model):
     """
@@ -159,7 +171,8 @@ class Group(models.Model):
         return u"%s" % self.name
 
     def save(self, *args, **kwargs):
-        if self.slug: self.cache_key = self.slug
+        if self.slug:
+            self.cache_key = self.slug
         super(Group, self).save(*args, **kwargs)
 
 # cache callback
@@ -183,8 +196,8 @@ class Plugin(models.Model):
     model_name = models.CharField(_("Model Name"), max_length=100, blank=True)
 
     # admin
-    lock_content = models.BooleanField(_("Lock Content"))
-    lock_position = models.BooleanField(_("Lock Position"))
+    lock_content = models.BooleanField(_("Lock Content")) # currently not used
+    lock_position = models.BooleanField(_("Lock Position")) # currently not used
     position = models.PositiveIntegerField(_("Position"))
 
     # internal
@@ -228,23 +241,23 @@ class Plugin(models.Model):
         ]
         return template.loader.select_template(templates)
 
-    def clean(self, *args, **kwargs):
-        """
-        If content is locked, all values derive from the existing object
-        If position is locked and the plugin has been moved, we'll throw an error
-        """
-        instance = self.get_plugin
-        if instance and instance.lock_content and self.lock_content:
-            for f in self._meta.fields:
-                # FIXME: improve these hardcoded values
-                if f.name not in ["id", "plugin_ptr", "container", "group",\
-                    "app_label", "model_name",\
-                    "lock_content", "lock_position", "position",\
-                    "create_date", "update_date"]:
-                    setattr(self, f.attname, getattr(instance, f.attname))
-        # FIXME: check for locked position, which could be hard when deleting rows:
-        # if instance and instance.lock_position and instance.position != self.position:
-        #     raise ValidationError()
+    # def clean(self, *args, **kwargs):
+    #     """
+    #     If content is locked, all values derive from the existing object
+    #     If position is locked and the plugin has been moved, we'll throw an error
+    #     """
+    #     instance = self.get_plugin
+    #     if instance and instance.lock_content and self.lock_content:
+    #         for f in self._meta.fields:
+    #             # FIXME: improve these hardcoded values
+    #             if f.name not in ["id", "plugin_ptr", "container", "group",\
+    #                 "app_label", "model_name",\
+    #                 "lock_content", "lock_position", "position",\
+    #                 "create_date", "update_date"]:
+    #                 setattr(self, f.attname, getattr(instance, f.attname))
+    #     # FIXME: check for locked position, which could be hard when deleting rows:
+    #     if instance and instance.lock_position and instance.position != self.position:
+    #         raise ValidationError()
 
     def save(self, *args, **kwargs):
         """
