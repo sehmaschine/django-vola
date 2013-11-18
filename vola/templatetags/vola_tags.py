@@ -88,3 +88,24 @@ def vola_plugin(context, container_slug, group_slug, plugin_slug):
 
     return None
 
+
+class RenderAsTemplateNode(template.Node):
+    def __init__(self, item_to_be_rendered):
+        self.item_to_be_rendered = template.Variable(item_to_be_rendered)
+
+    def render(self, context):
+        try:
+            actual_item = self.item_to_be_rendered.resolve(context)
+            return template.Template(actual_item).render(context)
+        except template.VariableDoesNotExist:
+            return ''
+
+def vola_render_as_template(parser, token):
+    bits = token.split_contents()
+    if len(bits) !=2:
+        raise template.TemplateSyntaxError("'%s' takes only one argument"
+                                  " (a variable representing a template to render)" % bits[0])    
+    return RenderAsTemplateNode(bits[1])
+
+vola_render_as_template = register.tag(vola_render_as_template)
+

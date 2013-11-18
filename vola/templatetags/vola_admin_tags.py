@@ -40,4 +40,6 @@ def vola_get_preview_url(context):
             url = eval(url) # try reverse url, eval is EVIL!
         except:
             url = ""
+    # add preview slug
+    url += "?%s=%s" % (container.transfer_container.slug, container.slug)
     return url
