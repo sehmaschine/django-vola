@@ -153,7 +153,7 @@
             {% if not original.preview and has_preview_permission %}
                 <li><a class="grp-add-link grp-state-focus" href="{% url opts|admin_urlname:'make_preview' original.id %}">{% trans "Make Preview" %}</a>
             {% endif %}
-            <!-- Transfer PReview -->
+            <!-- Transfer Preview -->
             {% if original.preview and has_preview_permission %}
                 <li><a class="grp-state-focus" href="{% url opts|admin_urlname:'transfer_preview' original.id %}">{% trans "Transfer Preview" %}</a>
             {% endif %}
