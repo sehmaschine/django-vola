@@ -189,6 +189,7 @@ class Plugin(models.Model):
     
     container = models.ForeignKey(Container, related_name="plugins")
     group = models.ForeignKey(Group, related_name="plugins", blank=True, null=True)
+    slug = models.SlugField(_("Slug"), max_length=200, blank=True)
     language = models.ForeignKey(Language, related_name="plugins", blank=True, null=True)
 
     # plugin meta information
@@ -208,6 +209,7 @@ class Plugin(models.Model):
         verbose_name = _("Plugin")
         verbose_name_plural = _("Plugins")
         ordering = ["position"]
+        unique_together = ("container", "group", "slug",)
 
     def __str__(self):
         return "%s" % self.id
@@ -225,7 +227,7 @@ class Plugin(models.Model):
     def template_name(self):
         """
         Default template name equals model_name,
-        Override this with your custom plugin (if needed)
+        Overwrite this with your custom plugin (if needed)
         """
         return self.model_name
 
@@ -240,6 +242,17 @@ class Plugin(models.Model):
             "%s.html" % (self.template_name),
         ]
         return template.loader.select_template(templates)
+
+    def data(self, context=None):
+        """
+        Overwrite with custom plugin
+        """
+        return None
+
+    def render(self, context=None):
+        """
+        Overwrite with custom plugin
+        """
 
     # def clean(self, *args, **kwargs):
     #     """
