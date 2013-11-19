@@ -8,7 +8,7 @@ setup(
     name='django-vola',
     version='0.1',
     description='Content Management with Django',
-    long_description = read('README.rst'),
+    long_description = read('README.md'),
     author='Patrick Kranzlmueller, Axel Swoboda (vonautomatisch)',
     author_email='office@vonautomatisch.at',
     url = 'http://django-vola.readthedocs.org',
