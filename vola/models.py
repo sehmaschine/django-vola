@@ -235,9 +235,6 @@ class Plugin(models.Model):
         Loading template for a plugin
         """
         templates = [
-            "containers/volaplugins/%s/%s.html" % (self.app_label, self.template_name),
-            "volaplugins/%s/%s.html" % (self.app_label, self.template_name),
-            "%s/templates/%s.html" % (self.app_label, self.template_name),
             "%s/%s.html" % (self.app_label, self.template_name),
             "%s.html" % (self.template_name),
         ]
