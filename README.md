@@ -12,7 +12,6 @@ Features
 * full unit–tests
 * compatible with django–grappelli
 * only about 1000 lines of code
-
 * NO pages
 * NO menus
 * NO URLs
