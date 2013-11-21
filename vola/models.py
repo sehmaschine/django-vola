@@ -240,13 +240,13 @@ class Plugin(models.Model):
         ]
         return template.loader.select_template(templates)
 
-    def data(self, context=None):
+    def data(self, context=None, *args, **kwargs):
         """
         Overwrite with custom plugin
         """
         return None
 
-    def render(self, context=None):
+    def render(self, context=None, *args, **kwargs):
         """
         Overwrite with custom plugin
         """

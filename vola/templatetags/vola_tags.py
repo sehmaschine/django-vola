@@ -29,7 +29,7 @@ def vola_rendered_group(context, container_slug, group_slug):
 
 
 @register.assignment_tag(takes_context=True)
-def vola_rendered_plugin_list(context, container_slug, group_slug):
+def vola_rendered_plugin_list(context, container_slug, group_slug, *args, **kwargs):
     """
     Returns a list of rendered plugins
 
@@ -43,12 +43,12 @@ def vola_rendered_plugin_list(context, container_slug, group_slug):
 
     for item in plugin_list:
         plugin = eval("item."+item.model_name)
-        result_list.append(plugin.render(context))
+        result_list.append(plugin.render(context, *args, **kwargs))
     return result_list
 
 
 @register.assignment_tag(takes_context=True)
-def vola_data_plugin_list(context, container_slug, group_slug):
+def vola_data_plugin_list(context, container_slug, group_slug, *args, **kwargs):
     """
     Returns a list of plugins with data
 
@@ -62,12 +62,12 @@ def vola_data_plugin_list(context, container_slug, group_slug):
 
     for item in plugin_list:
         plugin = eval("item."+item.model_name)
-        result_list.append(plugin.data(context))
+        result_list.append(plugin.data(context, *args, **kwargs))
     return result_list
 
 
 @register.assignment_tag(takes_context=True)
-def vola_rendered_plugin(context, container_slug, group_slug, plugin_slug):
+def vola_rendered_plugin(context, container_slug, group_slug, plugin_slug, *args, **kwargs):
     """
     Returns a single rendered plugins
 
@@ -81,12 +81,12 @@ def vola_rendered_plugin(context, container_slug, group_slug, plugin_slug):
     for item in plugin_list:
         plugin = eval("item."+item.model_name)
         if plugin.slug == plugin_slug:
-            return plugin.render(context)
+            return plugin.render(context, *args, **kwargs)
     return None
 
 
 @register.assignment_tag(takes_context=True)
-def vola_data_plugin(context, container_slug, group_slug, plugin_slug):
+def vola_data_plugin(context, container_slug, group_slug, plugin_slug, *args, **kwargs):
     """
     Returns a single plugin as an object
 
@@ -100,7 +100,7 @@ def vola_data_plugin(context, container_slug, group_slug, plugin_slug):
     for item in plugin_list:
         plugin = eval("item."+item.model_name)
         if plugin.slug == plugin_slug:
-            return plugin.data(context)
+            return plugin.data(context, *args, **kwargs)
     return None
 
 
