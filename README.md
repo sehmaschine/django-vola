@@ -6,12 +6,14 @@ A different approach on content management, based on django–grappelli.
 Features
 --------
 
-* plugin–based
-* multi–lingual
-* previews
-* unit–tests
-* compatible with ``django–grappelli``
-* NO fu**ing frontend–editing
-* NO page–hierarchy
-* NO editable menu
-* NO pre-given URLs
+* 100% plugin–based
+* multilingual
+* celery previews
+* full unit–tests
+* compatible with django–grappelli
+* only about 1000 lines of code
+
+* NO pages
+* NO menus
+* NO URLs
+* NO frontend–editing
