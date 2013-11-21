@@ -209,7 +209,6 @@ class Plugin(models.Model):
         verbose_name = _("Plugin")
         verbose_name_plural = _("Plugins")
         ordering = ["position"]
-        unique_together = ("container", "group", "slug",)
 
     def __str__(self):
         return "%s" % self.id
@@ -254,6 +253,7 @@ class Plugin(models.Model):
         """
         Overwrite with custom plugin
         """
+        return None
 
     # def clean(self, *args, **kwargs):
     #     """
