@@ -114,7 +114,6 @@ class Container(models.Model):
         return u"%s" % self.name
 
     def save(self, *args, **kwargs):
-        initial_group = kwargs.pop("initial_group", True)
         if self.slug:
             self.cache_key = self.slug
         super(Container, self).save(*args, **kwargs)
@@ -122,8 +121,6 @@ class Container(models.Model):
             self.transfer_container = self
         if not self.preview:
             self.transfer_date = self.transfer_container = None
-        # if initial_group and not self.groups.all():
-        #     Group.objects.create(container=self, name=_("Plugins"), slug="plugins", menu=True, position=0)
 
 # cache callback
 # post_save.connect(cache_callback, sender=Container)
