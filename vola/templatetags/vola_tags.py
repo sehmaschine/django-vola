@@ -10,6 +10,25 @@ from vola.models import Language, Category, Container, Group, Plugin
 
 
 @register.assignment_tag(takes_context=True)
+def vola_plugin_list(context, container_slug, group_slug, *args, **kwargs):
+    """
+    Returns a list of plugins
+
+    Usage:
+    {% vola_get_plugin_list "container_slug" "group_slug" as var %}
+    """
+    
+    result_list = []
+    slug = context["request"].GET.get(container_slug, container_slug) # preview
+    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug)
+
+    for item in plugin_list:
+        plugin = eval("item."+item.model_name)
+        result_list.append(plugin)
+    return result_list
+
+
+@register.assignment_tag(takes_context=True)
 def vola_rendered_plugin_list(context, container_slug, group_slug, *args, **kwargs):
     """
     Returns a list of rendered plugins
@@ -48,9 +67,28 @@ def vola_data_plugin_list(context, container_slug, group_slug, *args, **kwargs):
 
 
 @register.assignment_tag(takes_context=True)
+def vola_plugin(context, container_slug, group_slug, plugin_slug, *args, **kwargs):
+    """
+    Returns a single plugin
+
+    Usage:
+    {% vola_rendered_plugin "container_slug" "group_slug" "plugin_slug" as var %}
+    """
+    
+    slug = context["request"].GET.get(container_slug, container_slug) # preview
+    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug)
+
+    for item in plugin_list:
+        plugin = eval("item."+item.model_name)
+        if plugin.slug == plugin_slug:
+            return plugin
+    return None
+
+
+@register.assignment_tag(takes_context=True)
 def vola_rendered_plugin(context, container_slug, group_slug, plugin_slug, *args, **kwargs):
     """
-    Returns a single rendered plugins
+    Returns a single rendered plugin
 
     Usage:
     {% vola_rendered_plugin "container_slug" "group_slug" "plugin_slug" as var %}
@@ -83,6 +121,28 @@ def vola_data_plugin(context, container_slug, group_slug, plugin_slug, *args, **
         if plugin.slug == plugin_slug:
             return plugin.data(context, *args, **kwargs)
     return None
+
+
+@register.assignment_tag(takes_context=True)
+def vola_data(context, plugin, *args, **kwargs):
+    """
+    Renders a plugin
+
+    Usage:
+    {% vola_data plugin %}
+    """
+    return plugin.data(context, *args, **kwargs)
+
+
+@register.assignment_tag(takes_context=True)
+def vola_render(context, plugin, *args, **kwargs):
+    """
+    Renders a plugin
+
+    Usage:
+    {% vola_render plugin %}
+    """
+    return plugin.render(context, *args, **kwargs)
 
 
 class RenderAsTemplateNode(template.Node):
