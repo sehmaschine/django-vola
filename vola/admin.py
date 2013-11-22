@@ -446,9 +446,12 @@ class ContainerAdmin(admin.ModelAdmin):
 
         errors = False
         if request.method == "POST":
+            # pre signal
+            plugins = Plugin.objects.filter(group=group, container=obj, language=language)
+            signals.vola_pre_edit_plugins.send(sender=request, container=obj, group=group, plugins=plugins)
             # plugins
             counter = 0
-            for i, item in enumerate(Plugin.objects.filter(group=group, container=obj, language=language), start=1):
+            for i, item in enumerate(plugins, start=1):
                 prefix = "plugin_%s" % i
                 plugin = eval("item."+item.model_name)
                 pluginModel, pluginModelAdmin, pluginModelForm = self.get_plugin_objects(request, item.app_label, item.model_name)
@@ -478,6 +481,9 @@ class ContainerAdmin(admin.ModelAdmin):
                 self.save_extra_plugins(request, extrapluginforms, obj, group)
                 change_message = self.construct_plugin_message(request, pluginforms, extrapluginforms)
                 self.log_change(request, obj, change_message)
+                # post signal
+                plugins = Plugin.objects.filter(group=group, container=obj, language=language)
+                signals.vola_post_edit_plugins.send(sender=request, container=obj, group=group, plugins=plugins)
                 return self.response_change(request, obj)
             else:
                 errors = True
