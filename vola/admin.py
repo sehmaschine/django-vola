@@ -270,15 +270,8 @@ class ContainerAdmin(admin.ModelAdmin):
             if obj:
                 return super(ContainerAdmin, self).get_fieldsets(request, obj)
             return self.fieldsets_add
+        self.prepopulated_fields = {}
         return self.restricted_fieldsets
-
-    def get_prepopulated_fields(self, request, obj=None):
-        """
-        No prepulated fields with preview
-        """
-        if obj and obj.preview:
-            return {}
-        return self.prepopulated_fields
 
     def get_form(self, request, obj=None, **kwargs):
         """
@@ -584,13 +577,13 @@ class ContainerAdmin(admin.ModelAdmin):
         container.slug = "%s_%s" % (container.slug, time.time())
         container.cache_key = "%s_%s" % (container.cache_key, time.time())
         container.preview = True
-        container.save(initial_group=False)
+        container.save()
         # set new name/slug/cache_key
         container.name = "%s (%s)" % (name, container.id)
         container.slug = "%s_%s" % (slug, container.id)
         container.cache_key = "%s_%s" % (cache_key, container.id)
         container.transfer_container_id = transfer_container_id
-        container.save(initial_group=False)
+        container.save()
         # new permissions
         for permission in Permission.objects.filter(container__id=unquote(object_id)):
             permission.pk = None
