@@ -149,9 +149,9 @@
             {% if original.preview and original.page_url %}{% vola_get_preview_url as preview_url %}{% if preview_url %}
                 <li><a href="{{ preview_url }}" class="grp-state-focus" target="_blank">{% trans "Show Preview" %}</a></li>
             {% endif %}{% endif %}
-            <!-- Make Preview -->
+            <!-- Create Preview -->
             {% if not original.preview and has_preview_permission %}
-                <li><a class="grp-add-link grp-state-focus" href="{% url opts|admin_urlname:'make_preview' original.id %}">{% trans "Make Preview" %}</a>
+                <li><a class="grp-add-link grp-state-focus" href="{% url opts|admin_urlname:'create_preview' original.id %}">{% trans "Create Preview" %}</a>
             {% endif %}
             <!-- Transfer Preview -->
             {% if original.preview and has_preview_permission %}

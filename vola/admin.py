@@ -300,7 +300,7 @@ class ContainerAdmin(admin.ModelAdmin):
             url(r"^(.+)/history/$", wrap(self.history_view), name="%s_%s_history" % info),
             url(r"^(.+)/delete/$", wrap(self.delete_view), name="%s_%s_delete" % info),
             url(r"^(?P<object_id>\d+)/group/(?P<group_id>\d+)/$", wrap(self.group_view), name="%s_%s_group" % info),
-            url(r"^(.+)/make-preview/$", wrap(self.make_preview), name="%s_%s_make_preview" % info),
+            url(r"^(.+)/make-preview/$", wrap(self.create_preview), name="%s_%s_create_preview" % info),
             url(r"^(.+)/transfer-preview/$", wrap(self.transfer_preview), name="%s_%s_transfer_preview" % info),
             url(r"^(.+)/$", wrap(self.change_view), name="%s_%s_change" % info),
         )
@@ -553,7 +553,7 @@ class ContainerAdmin(admin.ModelAdmin):
         return change_message or _("No fields changed.")
 
     # @transaction.commit_on_success
-    def make_preview(self, request, object_id, form_url="", extra_context=None):
+    def create_preview(self, request, object_id, form_url="", extra_context=None):
         """
         Create preview (including permissions and groups/plugins)
         """
