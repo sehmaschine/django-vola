@@ -22,11 +22,16 @@ from django.utils.text import get_text_list
 from django.contrib.admin.util import flatten_fieldsets
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.views.decorators.csrf import csrf_protect
+from django.utils.decorators import method_decorator
+from django.db import transaction
 from django.db.models import Q
 
 # PROJECT IMPORTS
 from vola.models import Language, Category, Container, Group, Plugin, Permission
 from vola import signals
+
+csrf_protect_m = method_decorator(csrf_protect)
 
 
 class AdminErrorList(forms.util.ErrorList):
@@ -114,8 +119,8 @@ class PluginAdmin(admin.ModelAdmin):
         """
         return super(PluginAdmin, self).get_form(request, obj, fields=flatten_fieldsets(self.get_fieldsets(request, obj)))
 
-    # @csrf_protect_m
-    # @transaction.commit_on_success
+    @csrf_protect_m
+    @transaction.commit_on_success
     def add_view(self, request, form_url="", extra_context=None):
         """
         Custom add view without inlines/formsets
@@ -386,6 +391,8 @@ class ContainerAdmin(admin.ModelAdmin):
             plugin.group = group
             plugin.save()
 
+    @csrf_protect_m
+    @transaction.commit_on_success
     def change_view(self, request, object_id, form_url='', extra_context=None):
         """
         Additional permissions with the change view
@@ -409,8 +416,8 @@ class ContainerAdmin(admin.ModelAdmin):
     def history_view(self, request, object_id, extra_context=None):
         return super(ContainerAdmin, self).history_view(request, object_id, extra_context=extra_context)
 
-    # @csrf_protect_m
-    # @transaction.commit_on_success
+    @csrf_protect_m
+    @transaction.commit_on_success
     def group_view(self, request, object_id, group_id, form_url="", extra_context=None):
         """
         The change form for a ``Group`` without inlines/formsets, extended with ``pluginforms``.
@@ -552,7 +559,7 @@ class ContainerAdmin(admin.ModelAdmin):
         change_message = " ".join(change_message)
         return change_message or _("No fields changed.")
 
-    # @transaction.commit_on_success
+    @transaction.commit_on_success
     def create_preview(self, request, object_id, form_url="", extra_context=None):
         """
         Create preview (including permissions and groups/plugins)
@@ -611,7 +618,7 @@ class ContainerAdmin(admin.ModelAdmin):
         post_url_continue = reverse("admin:%s_%s_change" % (opts.app_label, opts.module_name), args=(container.id,), current_app=self.admin_site.name)
         return HttpResponseRedirect(post_url_continue)
 
-    # @transaction.commit_on_success
+    @transaction.commit_on_success
     def transfer_preview(self, request, object_id, form_url="", extra_context=None):
         """
         Transfer preview (including permissions and groups/plugins)
