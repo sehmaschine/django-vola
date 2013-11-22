@@ -10,25 +10,6 @@ from vola.models import Language, Category, Container, Group, Plugin
 
 
 @register.assignment_tag(takes_context=True)
-def vola_rendered_group(context, container_slug, group_slug):
-    """
-    Returns a rendered group
-
-    Usage:
-    {% vola_rendered_group "container_slug" "group_slug" as var %}
-    """
-    
-    result_list = []
-    slug = context["request"].GET.get(container_slug, container_slug) # preview
-    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug)
-
-    for item in plugin_list:
-        plugin = eval("item."+item.model_name)
-        result_list.append(plugin.render(context))
-    return result_list
-
-
-@register.assignment_tag(takes_context=True)
 def vola_rendered_plugin_list(context, container_slug, group_slug, *args, **kwargs):
     """
     Returns a list of rendered plugins
