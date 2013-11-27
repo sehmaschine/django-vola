@@ -20,7 +20,7 @@ Features
 Requirements
 ------------
 
-* Django 1.4/1.5
-* Grappelli 2.4.8
-* South, http://south.aeracode.org
-* django-positions, https://pypi.python.org/pypi/django-positions
+* **Django 1.4/1.5**, http://djangoproject.com
+* **Grappelli 2.4.8**, http://grappelliproject.com
+* **South**, http://south.aeracode.org
+* **django-positions**, https://pypi.python.org/pypi/django-positions
