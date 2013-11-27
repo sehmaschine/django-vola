@@ -26,6 +26,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.db import transaction
 from django.db.models import Q
+from django.conf.urls import patterns, url
 
 # PROJECT IMPORTS
 from vola.models import Language, Category, Container, Group, Plugin, Permission
@@ -172,7 +173,7 @@ class ContainerAdmin(admin.ModelAdmin):
     """
     actions = None
     list_display = ("category", "container_name", "container_languages", "preview", "transfer_container", "transfer_date", "container_settings",)
-    list_display_links = ("container_name",)
+    list_display_links = ("container_settings",)
     list_filter = ("create_date", "update_date", "category", "preview",)
     search_fields = ("name",)
 
@@ -215,13 +216,17 @@ class ContainerAdmin(admin.ModelAdmin):
 
     def container_name(self, obj):
         """
-        Always link to the first plugin section
+        Always link to the first plugin section.
+        No link if languages are defined (see container_languages instead)
         """
         if Language.objects.all().count():
-            lang = Language.objects.all()[0]
-            return "<a href='%d/group/%d/?lang=%s' class='vola-container-name'>%s</a>" % (obj.id, obj.groups.all()[0].id, lang, obj.name)
+            return "<span class='vola-container-name'><strong>%s</strong></a></span>" % (obj.name)
         else:
-            return "<a href='%d/group/%d/' class='vola-container-name'>%s</a>" % (obj.id, obj.groups.all()[0].id, obj.name)
+            if obj.groups.all().count():
+                link = reverse("admin:%s_%s_group" % (self.opts.app_label, self.opts.module_name), args=(obj.id, obj.groups.all()[0].id,), current_app=self.admin_site.name)
+                return "<a href='%s' class='vola-container-name'><strong>%s</strong></a>" % (link, obj.name)
+            else:
+                return "<span class='vola-container-name'><strong>%s</strong></a></span>" % (obj.name)
     container_name.short_description = _("Name")
     container_name.allow_tags = True
     container_name.admin_order_field = "name"
@@ -232,7 +237,11 @@ class ContainerAdmin(admin.ModelAdmin):
         """
         r = ''
         for item in Language.objects.all():
-            r = r + "<a href='%d/group/%d/%s/' class='vola-container-language'>%s</a>" % (obj.id, obj.groups.all()[0].id, item, item)
+            if obj.groups.all().count():
+                link = reverse("admin:%s_%s_group" % (self.opts.app_label, self.opts.module_name), args=(obj.id, obj.groups.all()[0].id,), current_app=self.admin_site.name)
+                r = r + "<a href='%d/group/%d/%s/' class='vola-container-language'><strong>%s</strong></a> " % (obj.id, obj.groups.all()[0].id, item, item)
+            else:
+                r = r + "<span class='vola-container-language'><strong>%s</strong></a></span> " % (item)
         return r
     container_languages.short_description = _("Languages")
     container_languages.allow_tags = True
@@ -280,29 +289,14 @@ class ContainerAdmin(admin.ModelAdmin):
         return super(ContainerAdmin, self).get_form(request, obj, fields=flatten_fieldsets(self.get_fieldsets(request, obj)))
 
     def get_urls(self):
-        """
-        Additional urls for previews and groups
-        """
-        from django.conf.urls import patterns, url
-
-        def wrap(view):
-            def wrapper(*args, **kwargs):
-                return self.admin_site.admin_view(view)(*args, **kwargs)
-            return update_wrapper(wrapper, view)
-
+        urls = super(ContainerAdmin, self).get_urls()
         info = self.model._meta.app_label, self.model._meta.module_name
-
-        urlpatterns = patterns("",
-            url(r"^$", wrap(self.changelist_view), name="%s_%s_changelist" % info),
-            url(r"^add/$", wrap(self.add_view), name="%s_%s_add" % info),
-            url(r"^(.+)/history/$", wrap(self.history_view), name="%s_%s_history" % info),
-            url(r"^(.+)/delete/$", wrap(self.delete_view), name="%s_%s_delete" % info),
-            url(r"^(?P<object_id>\d+)/group/(?P<group_id>\d+)/$", wrap(self.group_view), name="%s_%s_group" % info),
-            url(r"^(.+)/make-preview/$", wrap(self.create_preview), name="%s_%s_create_preview" % info),
-            url(r"^(.+)/transfer-preview/$", wrap(self.transfer_preview), name="%s_%s_transfer_preview" % info),
-            url(r"^(.+)/$", wrap(self.change_view), name="%s_%s_change" % info),
+        vola_urls = patterns('',
+            url(r"^(?P<object_id>\d+)/group/(?P<group_id>\d+)/$", self.admin_site.admin_view(self.group_view), name="%s_%s_group" % info),
+            url(r"^(.+)/make-preview/$", self.admin_site.admin_view(self.create_preview), name="%s_%s_create_preview" % info),
+            url(r"^(.+)/transfer-preview/$", self.admin_site.admin_view(self.transfer_preview), name="%s_%s_transfer_preview" % info),
         )
-        return urlpatterns
+        return vola_urls + urls
 
     def get_available_plugins(self, group):
         """
