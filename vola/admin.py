@@ -239,7 +239,7 @@ class ContainerAdmin(admin.ModelAdmin):
         for item in Language.objects.all():
             if obj.groups.all().count():
                 link = reverse("admin:%s_%s_group" % (self.opts.app_label, self.opts.module_name), args=(obj.id, obj.groups.all()[0].id,), current_app=self.admin_site.name)
-                r = r + "<a href='%d/group/%d/%s/' class='vola-container-language'><strong>%s</strong></a> " % (obj.id, obj.groups.all()[0].id, item, item)
+                r = r + "<a href='%s?lang=%s' class='vola-container-language'><strong>%s</strong></a>" % (link, item, item)
             else:
                 r = r + "<span class='vola-container-language'><strong>%s</strong></a></span> " % (item)
         return r
