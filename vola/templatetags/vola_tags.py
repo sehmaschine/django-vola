@@ -18,7 +18,8 @@ def vola_plugin_list(context, container_slug, group_slug, *args, **kwargs):
     {% vola_get_plugin_list "container_slug" "group_slug" as var %}
     {% vola_get_plugin_list "container_slug" "group_slug" language="de" as var %}
 
-    FIXME: displaying pluginlist with template throws error
+    Optional keyword arguments:
+    language
     """
     
     result_list = []
@@ -40,6 +41,9 @@ def vola_rendered_plugin_list(context, container_slug, group_slug, *args, **kwar
     Usage:
     {% vola_rendered_plugin_list "container_slug" "group_slug" as var %}
     {% vola_rendered_plugin_list "container_slug" "group_slug" language="de" as var %}
+
+    Optional keyword arguments:
+    template_prefix, template_suffix, language
     """
     
     result_list = []
@@ -61,6 +65,9 @@ def vola_data_plugin_list(context, container_slug, group_slug, *args, **kwargs):
     Usage:
     {% vola_data_plugin_list "container_slug" "group_slug" as var %}
     {% vola_data_plugin_list "container_slug" "group_slug" language="de" as var %}
+
+    Optional keyword arguments:
+    language
     """
     
     result_list = []
@@ -82,6 +89,9 @@ def vola_plugin(context, container_slug, group_slug, plugin_slug, *args, **kwarg
     Usage:
     {% vola_rendered_plugin "container_slug" "group_slug" "plugin_slug" as var %}
     {% vola_rendered_plugin "container_slug" "group_slug" "plugin_slug" language="de" as var %}
+
+    Optional keyword arguments:
+    language
     """
     
     slug = context["request"].GET.get(container_slug, container_slug) # preview
@@ -103,6 +113,9 @@ def vola_rendered_plugin(context, container_slug, group_slug, plugin_slug, *args
     Usage:
     {% vola_rendered_plugin "container_slug" "group_slug" "plugin_slug" as var %}
     {% vola_rendered_plugin "container_slug" "group_slug" "plugin_slug" language="de" as var %}
+
+    Optional keyword arguments:
+    template_prefix, template_suffix, language
     """
     
     slug = context["request"].GET.get(container_slug, container_slug) # preview
@@ -124,6 +137,9 @@ def vola_data_plugin(context, container_slug, group_slug, plugin_slug, *args, **
     Usage:
     {% vola_data_plugin "container_slug" "group_slug" "plugin_slug" as var %}
     {% vola_data_plugin "container_slug" "group_slug" "plugin_slug" language="de" as var %}
+
+    Optional keyword arguments:
+    language
     """
     
     slug = context["request"].GET.get(container_slug, container_slug) # preview
@@ -155,6 +171,9 @@ def vola_render(context, plugin, *args, **kwargs):
 
     Usage:
     {% vola_render plugin %}
+
+    Optional keyword arguments:
+    template_prefix, template_suffix
     """
     return plugin.render(context, *args, **kwargs)
 

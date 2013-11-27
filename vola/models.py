@@ -89,7 +89,7 @@ class Container(models.Model):
     page_url = models.CharField(_("Page URL"), max_length=200, blank=True)
 
     # preview/transfer
-    preview = models.BooleanField(_("Preview")) # not editable
+    preview = models.BooleanField(_("Preview")) # not editable (check 1.6 compatibility)
     preview_url = models.CharField(_("Preview URL"), max_length=200, blank=True)
     transfer_date = models.DateTimeField(_("Transfer Date"), blank=True, null=True)
     transfer_container = models.ForeignKey("self", verbose_name=_("Transfer Container"), related_name="previews", blank=True, null=True) # not editable
@@ -227,14 +227,26 @@ class Plugin(models.Model):
         """
         return self.model_name
 
-    def get_template(self):
+    def get_template(self, context=None, *args, **kwargs):
         """
         Loading template for a plugin
         """
+        prefix = kwargs.get("template_prefix", None)
+        suffix = kwargs.get("template_suffix", None)
         templates = [
             "%s/%s.html" % (self.app_label, self.template_name),
             "%s.html" % (self.template_name),
         ]
+        if prefix:
+            templates = [
+                "%s/%s_%s.html" % (self.app_label, prefix, self.template_name),
+                "%s_%s.html" % (prefix, self.template_name),
+            ] + templates
+        if suffix:
+            templates = [
+                "%s/%s_%s.html" % (self.app_label, self.template_name, suffix),
+                "%s_%s.html" % (self.template_name, suffix),
+            ] + templates
         return template.loader.select_template(templates)
 
     def data(self, context=None, *args, **kwargs):
