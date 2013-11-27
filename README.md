@@ -16,3 +16,11 @@ Features
 * NO menus
 * NO URLs
 * NO frontend–editing
+
+Requirements
+------------
+
+* Django 1.4/1.5
+* Grappelli 2.4.8
+* South, http://south.aeracode.org
+* django-positions, https://pypi.python.org/pypi/django-positions
