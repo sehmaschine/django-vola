@@ -179,7 +179,7 @@
     {% if original %}
         <ul class="grp-object-languages">
             {% for item in languages %}
-            <li{% if item.name == language %} class="grp-selected"{% endif %}><a href="?lang={{ item }}">{{ item }}</a></li>
+            <li{% if item == language %} class="grp-selected"{% endif %}><a href="?lang={{ item }}">{{ item }}</a></li>
             {% endfor %}
         </ul>
     {% endif %}

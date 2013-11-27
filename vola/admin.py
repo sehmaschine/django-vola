@@ -8,7 +8,7 @@ from functools import update_wrapper, partial
 # DJANGO IMPORTS
 from django.contrib import admin
 from django.contrib.admin.util import unquote
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.template.response import TemplateResponse
 from django.utils.translation import ugettext as _
 from django.utils.encoding import force_text
@@ -363,19 +363,26 @@ class ContainerAdmin(admin.ModelAdmin):
         af.adminmedia = modeladmin.media # important for ajax calls
         return af
 
-    def save_plugins(self, request, forms):
+    def save_plugins(self, request, forms, language):
         for form in forms:
             delete = request.POST.get("%s-DELETE" % form.prefix, 0)
             if delete == "1":
                 form.instance.delete()
             else:
-                form.save()
+                if language:
+                    f = form.save(commit=False)
+                    f.language = language
+                    f.save()
+                else:
+                    form.save()
 
-    def save_extra_plugins(self, request, forms, obj, group):
+    def save_extra_plugins(self, request, forms, obj, group, language):
         for form in forms:
             plugin = form.save(commit=False)
             plugin.container = obj
             plugin.group = group
+            if language:
+                plugin.language = language
             plugin.save()
 
     @csrf_protect_m
@@ -412,9 +419,22 @@ class ContainerAdmin(admin.ModelAdmin):
         pluginforms = []
         pluginadminforms= []
         formsets = [] # no inlines with groups
-        lang = request.GET.get("lang", None)
-        if lang:
-            language = Language.objects.get(name=lang)
+
+        # languages
+        # FIXME: use class method instead
+        lang_query = request.GET.get("lang", None)
+        lang_session = request.session.get("vola_language", None)
+        if lang_query:
+            try:
+                language = Language.objects.get(name=lang_query)
+                request.session['vola_language'] = lang_query
+            except ObjectDoesNotExist:
+                language = None
+        elif lang_session:
+            try:
+                language = Language.objects.get(name=lang_session)
+            except ObjectDoesNotExist:
+                language = None
         else:
             language = None
 
@@ -471,8 +491,8 @@ class ContainerAdmin(admin.ModelAdmin):
                         media = media + pluginModelAdmin.media + pluginAdminForm.media
             # save
             if all_valid(pluginforms) and all_valid(extrapluginforms):
-                self.save_plugins(request, pluginforms)
-                self.save_extra_plugins(request, extrapluginforms, obj, group)
+                self.save_plugins(request, pluginforms, language)
+                self.save_extra_plugins(request, extrapluginforms, obj, group, language)
                 change_message = self.construct_plugin_message(request, pluginforms, extrapluginforms)
                 self.log_change(request, obj, change_message)
                 # post signal
@@ -496,7 +516,7 @@ class ContainerAdmin(admin.ModelAdmin):
             "object_id": obj.id,
             "original": obj,
             "languages": Language.objects.all(),
-            "language": request.GET.get("lang", None),
+            "language": language,
             "group": group,
             "groups": groups,
             "groups_additional": groups_additional,

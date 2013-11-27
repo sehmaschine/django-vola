@@ -16,11 +16,15 @@ def vola_plugin_list(context, container_slug, group_slug, *args, **kwargs):
 
     Usage:
     {% vola_get_plugin_list "container_slug" "group_slug" as var %}
+    {% vola_get_plugin_list "container_slug" "group_slug" language="de" as var %}
+
+    FIXME: displaying pluginlist with template throws error
     """
     
     result_list = []
     slug = context["request"].GET.get(container_slug, container_slug) # preview
-    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug)
+    language = kwargs.get("language", None)
+    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug, language__name=language)
 
     for item in plugin_list:
         plugin = eval("item."+item.model_name)
@@ -35,11 +39,13 @@ def vola_rendered_plugin_list(context, container_slug, group_slug, *args, **kwar
 
     Usage:
     {% vola_rendered_plugin_list "container_slug" "group_slug" as var %}
+    {% vola_rendered_plugin_list "container_slug" "group_slug" language="de" as var %}
     """
     
     result_list = []
     slug = context["request"].GET.get(container_slug, container_slug) # preview
-    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug)
+    language = kwargs.get("language", None)
+    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug, language__name=language)
 
     for item in plugin_list:
         plugin = eval("item."+item.model_name)
@@ -54,11 +60,13 @@ def vola_data_plugin_list(context, container_slug, group_slug, *args, **kwargs):
 
     Usage:
     {% vola_data_plugin_list "container_slug" "group_slug" as var %}
+    {% vola_data_plugin_list "container_slug" "group_slug" language="de" as var %}
     """
     
     result_list = []
     slug = context["request"].GET.get(container_slug, container_slug) # preview
-    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug)
+    language = kwargs.get("language", None)
+    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug, language__name=language)
 
     for item in plugin_list:
         plugin = eval("item."+item.model_name)
@@ -73,10 +81,12 @@ def vola_plugin(context, container_slug, group_slug, plugin_slug, *args, **kwarg
 
     Usage:
     {% vola_rendered_plugin "container_slug" "group_slug" "plugin_slug" as var %}
+    {% vola_rendered_plugin "container_slug" "group_slug" "plugin_slug" language="de" as var %}
     """
     
     slug = context["request"].GET.get(container_slug, container_slug) # preview
-    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug)
+    language = kwargs.get("language", None)
+    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug, language__name=language)
 
     for item in plugin_list:
         plugin = eval("item."+item.model_name)
@@ -92,10 +102,12 @@ def vola_rendered_plugin(context, container_slug, group_slug, plugin_slug, *args
 
     Usage:
     {% vola_rendered_plugin "container_slug" "group_slug" "plugin_slug" as var %}
+    {% vola_rendered_plugin "container_slug" "group_slug" "plugin_slug" language="de" as var %}
     """
     
     slug = context["request"].GET.get(container_slug, container_slug) # preview
-    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug)
+    language = kwargs.get("language", None)
+    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug, language__name=language)
 
     for item in plugin_list:
         plugin = eval("item."+item.model_name)
@@ -111,10 +123,12 @@ def vola_data_plugin(context, container_slug, group_slug, plugin_slug, *args, **
 
     Usage:
     {% vola_data_plugin "container_slug" "group_slug" "plugin_slug" as var %}
+    {% vola_data_plugin "container_slug" "group_slug" "plugin_slug" language="de" as var %}
     """
     
     slug = context["request"].GET.get(container_slug, container_slug) # preview
-    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug)
+    language = kwargs.get("language", None)
+    plugin_list = Plugin.objects.filter(group__slug=group_slug, container__slug=slug, language__name=language)
 
     for item in plugin_list:
         plugin = eval("item."+item.model_name)
