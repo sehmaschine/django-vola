@@ -195,6 +195,11 @@
                 <p class="errornote">
                     {% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
                 </p>
+                {% for adminform in pluginadminforms %}
+                {% if adminform.form.non_field_errors %}
+                <ul class="errorlist">{% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                {% endif %}
+                {% endfor %}
             {% endif %}
 
             <!-- Groups -->
