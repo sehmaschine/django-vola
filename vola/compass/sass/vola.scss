@@ -12,6 +12,41 @@
 // ----------------------------------------------------------------------------------------------------
 
 
+
+// Dashboard Module
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+$vola-color: #e5e567;
+$vola-gradient: #e5e567,#d9d957;
+$vola-gradient-reverse: #d9d957,#e5e567;
+$vola-dashboard-color: desaturate(lighten($vola-color, 28), 28);
+
+.grp-dashboard-module.vola {
+    background-color: $vola-dashboard-color;
+    h2 {
+        @include background-image(linear-gradient(darken($vola-dashboard-color, 5), darken($vola-dashboard-color, 10)));
+    }
+    &.grp-collapse {
+        h2 {
+            text-shadow: 0 1px 0 $vola-dashboard-color;
+            @include background-image(linear-gradient($vola-gradient));
+            &:hover {
+                @include background-image(linear-gradient($vola-gradient-reverse));
+            }
+        }
+        &.grp-open {
+            h2 {
+                @include background-image(linear-gradient($vola-gradient-reverse));
+            }
+        }
+    }
+    // .grp-row:not(tr) {
+    //     border-top-color: lighten($vola-dashboard-color, 14) !important;
+    //     border-bottom-color: darken($vola-dashboard-color, 14);
+    // }
+}
+
+
 // Form width (https://github.com/sehmaschine/django-grappelli/issues/460)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -173,7 +208,7 @@ nav.grp-navbar {
             > a {
                 color: #444;
                 background-color: #d9d957;
-                @include background-image(linear-gradient(#e5e567, #d9d957));
+                @include background-image(linear-gradient($vola-gradient));
             }
             .grp-counter {
                 border: 1px solid #d6d6d6;
