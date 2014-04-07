@@ -89,7 +89,7 @@ class Migration(SchemaMigration):
         db.send_create_signal('vola', ['Plugin'])
 
         # Adding unique constraint on 'Plugin', fields ['container', 'group', 'slug']
-        db.create_unique('vola_plugin', ['container_id', 'group_id', 'slug'])
+        #db.create_unique('vola_plugin', ['container_id', 'group_id', 'slug'])
 
         # Adding model 'Permission'
         db.create_table('vola_permission', (
