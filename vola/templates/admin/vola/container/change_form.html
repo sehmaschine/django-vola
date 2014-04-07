@@ -190,7 +190,7 @@
                                     {% for item in groups_additional %}
                                         <li>
                                             <a href="{% url opts|admin_urlname:'group' original.id item.id %}">{{ item }}
-                                                <span class="grp-badge grp-counter">42</span>
+                                                <span class="grp-badge grp-counter" style="display: none;">{{ item.plugins.count }}</span>
                                             </a>
                                         </li>
                                     {% endfor %}

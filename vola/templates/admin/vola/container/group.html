@@ -209,7 +209,7 @@
                             <a href="javascript://" class="grp-navbar-dropdown-handler">...</a>
                             <ul class="grp-navbar-dropdown-menu">
                                 {% for item in groups_additional %}
-                                    <li><a href="">{{ item }} <span class="grp-badge grp-counter" style="display: none;">42</span></a></li>
+                                    <li><a href="../{{ item.id }}/{% if language %}?lang={{ language }}{% endif %}">{{ item }} <span class="grp-badge grp-counter" style="display: none;">{{ item.plugins.count }}</span></a></li>
                                 {% endfor %}
                             </ul>
                         </li>
