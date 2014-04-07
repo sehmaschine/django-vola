@@ -1,0 +1,231 @@
+
+
+
+// Imports
+// ----------------------------------------------------------------------------------------------------
+
+@import "compass";
+
+@import "partials/base";
+
+
+
+// GRP-Modifications
+// ----------------------------------------------------------------------------------------------------
+
+
+// Form width (https://github.com/sehmaschine/django-grappelli/issues/460)
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+body.grp-change-form #grp-content-container > form,
+body.grp-change-form #grp-content-container > form > div {
+    width: 100%;
+}
+
+// Errors
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+.grp-module.vola-plugin {
+    h2 + ul.errorlist,
+    h2 + ul.grp-tools + ul.errorlist {
+        padding: 5px 10px;
+        border-top: 1px solid #fff;
+        border-bottom: 1px solid #ddd;
+        & + .grp-module {
+            border-top: 1px solid #fff;
+        }
+    }
+}
+
+// Footer
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+footer.grp-submit-row.grp-fixed-footer {
+    .grp-changelist-actions {
+        position: relative;
+        float: left;
+        margin: -2px 0;
+        padding: 5px 1px 7px 5px;
+        @include border-radius(3px);
+        background: #d9d957;
+    }
+}
+
+
+// Lock Handler
+// ----------------------------------------------------------------------------------------------------
+
+// .grp-lock-handler {
+//     @include border-radius(24px);
+//     background: #444 !important;
+// }
+
+
+
+// Languages
+// ----------------------------------------------------------------------------------------------------
+
+// @mixin grp-object-languages {
+//     position: relative;
+//     display: inline;
+//     li {
+//         display: inline;
+//         margin: 0 10px 0 0;
+//         padding: 0 10px 0 0;
+//         border-right: 2px solid #eee;
+//         &:last-child {
+//             border-right: 0;
+//         }
+//         a {
+//             display: inline-block;
+//             font-size: 12px;
+//             line-height: 16px;
+//             font-weight: bold;
+//         }
+//         &.grp-selected {
+//             a {
+//                 color: #444;
+//             }
+//         }
+//     }
+// }
+// .grp-object-languages {
+//     @include grp-object-languages;
+// }
+
+
+
+// Badges
+// ----------------------------------------------------------------------------------------------------
+
+@mixin grp-badge($color, $background) {
+    position: relative;
+    display: inline;
+    float: right;
+    margin: -2px 0 -1px 10px;
+    padding: 1px 6px;
+    min-width: 11px;
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: bold;
+    color: $color;
+    text-align: center;
+    @include border-radius(24px);
+    background: $background;
+}
+
+.grp-counter {
+    @include grp-badge(#999, #fff);
+    border: 1px solid #e0e0e0;
+}
+
+
+
+// Navbar
+// ----------------------------------------------------------------------------------------------------
+
+nav.grp-navbar {
+    position: relative;
+    float: left;
+    clear: both;
+    width: 100%;
+    margin-bottom: 16px;
+    font-size: 13px;
+    line-height: 16px;
+    border: 1px solid #dbdbdb;
+    border-color: #e0e0e0 #e0e0e0 #d6d6d6 #e0e0e0;
+    @include border-radius(3px);
+    background-color: #eee;
+    @include background-image(linear-gradient(#f5f5f5, #ebebeb));
+    // h1 {
+    //     position: relative;
+    //     float: left;
+    //     margin: 0;
+    //     padding: 10px 40px 10px 10px;
+    //     font-size: 13px;
+    //     line-height: 16px;
+    //     border-right: 1px solid #dbdbdb;
+    // }
+    > ul > li {
+        position: relative;
+        white-space: nowrap;
+        display: inline;
+        float: left;
+        overflow: visible;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-right: 1px solid #dbdbdb;
+        &.grp-float-right {
+            border-right: 0;
+            border-left: 1px solid #dbdbdb;
+        }
+        > a {
+            position: relative;
+            display: inline-block;
+            padding: 10px 10px;
+            font-weight: bold;
+            &:hover {
+                @include background-image(linear-gradient(#dbdbdb, #e5e5e5));
+            }
+            .grp-counter {
+                margin: -17px 0 -1px 10px;
+            }
+        }
+        &.grp-selected {
+            > a {
+                color: #444;
+                background-color: #d9d957;
+                @include background-image(linear-gradient(#e5e567, #d9d957));
+            }
+            .grp-counter {
+                border: 1px solid #d6d6d6;
+            }
+        }
+    }
+}
+
+
+
+// Navbar Dropdown
+// ----------------------------------------------------------------------------------------------------
+
+.grp-navbar-open {
+    a.grp-navbar-dropdown-handler,
+    a.grp-navbar-dropdown-handler:hover {
+        @include background-image(linear-gradient(#dbdbdb, #e5e5e5));
+    }
+    ul.grp-navbar-dropdown-menu {
+        display: block;
+    }
+}
+ul.grp-navbar-dropdown-menu {
+    position: absolute;
+    z-index: 900;
+    display: none;
+    margin-left: -1px;
+    @include border-bottom-radius(3px);
+    border: 1px solid #d6d6d6;
+    background: #f5f5f5;
+    @include box-shadow(0 30px 50px #888);
+    > li {
+        border: 0;
+        border-top: 1px solid #e0e0e0;
+        &:first-child {
+            border-top: 0;
+        }
+        > a {
+            position: relative;
+            display: block;
+            padding: 10px;
+            padding-right: 60px;
+            font-weight: bold;
+            border: 0 !important;
+            &:hover {
+                background: #e5e5e5;
+            }
+        }
+        .grp-counter {
+            margin: -1px -50px -1px 10px !important;
+        }
+    }
+}
