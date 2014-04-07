@@ -4,7 +4,7 @@
 {{ pluginmedia }}
 {{ adminform.media }}
 
-<div id="{{ adminform.prefix }}-group" class="grp-module {{ adminform.inline_classes|join:" "|default:"grp-collapse grp-open" }}{% if adminform.original %} has_original{% endif %} grp-dynamic-form">
+<div id="{{ adminform.prefix }}-group" class="vola-plugin grp-module {{ adminform.inline_classes|join:" "|default:"grp-collapse grp-open" }}{% if adminform.original %} has_original{% endif %} grp-dynamic-form">
     <h2 class="grp-collapse-handler">{{ adminform.verbose_name }}{% if adminform.original %}<span style="font-weight: normal; display: inline-block !important;">{{ adminform.original }}</span>{% endif %}</h2>
     <ul class="grp-tools">
         {% if adminform.sortable_field_name %}
