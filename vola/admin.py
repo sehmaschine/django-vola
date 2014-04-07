@@ -35,6 +35,14 @@ from vola import signals
 csrf_protect_m = method_decorator(csrf_protect)
 
 
+def import_from(method):
+    v = method.split(".")
+    name = v.pop()
+    module = ".".join(v)
+    module = __import__(module, fromlist=[name])
+    return getattr(module, name)
+
+
 class AdminErrorList(forms.util.ErrorList):
     """
     Stores all errors for the form/formsets in an add/change stage view.
@@ -82,7 +90,7 @@ class GroupInline(admin.StackedInline):
     classes = ('grp-collapse grp-open',)
     sortable_field_name = "position"
     sortable_excludes = ("menu",)
-    fields = ("name", "slug", "menu", "plugins_include", "plugins_exclude", "position",)
+    fields = ("name", "slug", "menu", "plugins_include", "plugins_exclude", "validation", "position",)
     extra = 1
 
 
@@ -147,7 +155,6 @@ class PluginAdmin(admin.ModelAdmin):
             self.get_readonly_fields(request),
             model_admin=self)
 
-        adminForm.original = False
         adminForm.can_delete = False
         adminForm.sortable_field_name = "position"
         adminForm.verbose_name = self.model._meta.verbose_name
@@ -385,6 +392,38 @@ class ContainerAdmin(admin.ModelAdmin):
                 plugin.language = language
             plugin.save()
 
+    def get_validation(self, group):
+        """
+        Get a list of validation methods for a given group
+        """
+        validation = []
+        if group.validation != "":
+            for v in group.validation.splitlines():
+                validation.append(v)
+        return validation
+
+    def group_valid(self, request, group, containeradminform, pluginadminforms):
+        """
+        Validate group with arbitrary plugins according to the
+        groups validation methods (assigned with the admin interface)
+        """
+        valid = True
+        validation_method_list = self.get_validation(group)
+        # validate with each method
+        if validation_method_list:
+            for validation_method in validation_method_list:
+                validation = import_from(validation_method)
+                validation(request, group, containeradminform, pluginadminforms)
+        # check pluginadminforms/plugin errors
+        for adminform in pluginadminforms:
+            if len(adminform.form.errors):
+                valid = False
+        # check adminform/container errors
+        if len(containeradminform.form.errors):
+            print "XXX"
+            valid = False
+        return valid
+
     @csrf_protect_m
     @transaction.commit_on_success
     def change_view(self, request, object_id, form_url='', extra_context=None):
@@ -458,6 +497,15 @@ class ContainerAdmin(admin.ModelAdmin):
         if obj is None:
             raise Http404(_("%(name)s object with primary key %(key)r does not exist.") % {"name": force_text(opts.verbose_name), "key": escape(object_id)})
 
+        # container admin form
+        # only used for non-plugin-errors
+        ModelForm = self.get_form(request, obj)
+        form = ModelForm(instance=obj)
+        adminForm = AdminForm(form, self.get_fieldsets(request, obj),
+            self.get_prepopulated_fields(request, obj),
+            self.get_readonly_fields(request, obj),
+            model_admin=self)
+
         errors = False
         if request.method == "POST":
             # pre signal
@@ -489,8 +537,11 @@ class ContainerAdmin(admin.ModelAdmin):
                         pluginadminforms.append(pluginAdminForm)
                         extrapluginforms.append(pluginModelForm)
                         media = media + pluginModelAdmin.media + pluginAdminForm.media
-            # save
-            if all_valid(pluginforms) and all_valid(extrapluginforms):
+            # VALIDATION
+            # form.is_valid() does not save the new data in DB.
+            # However, it updates the instance object with new attributes so that it can use them when you call form.save().
+            # Therefore, with group_valid we already have the updated instance(s).
+            if all_valid(pluginforms) and all_valid(extrapluginforms) and self.group_valid(request, group, adminForm, pluginadminforms):
                 self.save_plugins(request, pluginforms, language)
                 self.save_extra_plugins(request, extrapluginforms, obj, group, language)
                 change_message = self.construct_plugin_message(request, pluginforms, extrapluginforms)
@@ -521,6 +572,7 @@ class ContainerAdmin(admin.ModelAdmin):
             "groups": groups,
             "groups_additional": groups_additional,
             "app_label": opts.app_label,
+            "adminform": adminForm,
             "pluginadminforms": pluginadminforms,
             "plugins": self.get_available_plugins(group),
             "extraforms_counter": extraforms_counter,
@@ -555,7 +607,7 @@ class ContainerAdmin(admin.ModelAdmin):
         # existing plugins (change/delete)
         for form in pluginforms:
             delete = form.data.get("%s-DELETE" % form.prefix, "0")
-            if delete != "0": # raw data, therefore "0" insteaf of 0
+            if delete != "0": # raw data, therefore "0" instead of 0
                 change_message.append(_("Deleted %s (%s).") % (form._meta.model._meta.verbose_name, force_text(form.instance)))
             elif form.changed_data:
                 change_message.append(_("%s (%s): Changed %s.") % (form._meta.model._meta.verbose_name, force_text(form.instance), get_text_list(form.changed_data, _("and"))))

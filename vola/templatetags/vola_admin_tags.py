@@ -22,7 +22,7 @@ def vola_get_page_url(context):
         url = re.sub("self.language", language.name, url)
     if container.page_url.startswith("reverse"):
         try:
-            url = eval(url) # try reverse url, eval is EVIL!
+            url = eval(url)  # try reverse url, eval is EVIL!
         except:
             url = ""
     return url
@@ -37,7 +37,7 @@ def vola_get_preview_url(context):
         url = re.sub("self.language", language.name, url)
     if container.preview_url.startswith("reverse"):
         try:
-            url = eval(url) # try reverse url, eval is EVIL!
+            url = eval(url)  # try reverse url, eval is EVIL!
         except:
             url = ""
     # add preview slug

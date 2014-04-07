@@ -21,8 +21,10 @@
             <li><a href="javascript://" class="grp-icon grp-remove-handler" title="{% trans 'Remove Plugin' %}"></a></li>
         {% endif %}
     </ul>
-    {% if adminform.non_field_errors %}
-        {{ adminform.non_field_errors }}
+    {% if adminform.form.non_field_errors %}
+        <div class="grp-module">
+            {{ adminform.form.non_field_errors }}
+        </div>
     {% endif %}
     {% for fieldset in adminform %}
         {% include "admin/includes/fieldset_inline.html" %}
@@ -97,22 +99,6 @@
                 }
             }
         });
-
-        // LOCK CONTENT
-        // FIXME: this should additionally be checked with saving the model
-        // {% if adminform.original.lock_content %}
-        // $("#{{ adminform.prefix }}-group.has_original").find(":input").each(function(){
-        //     $(this).attr("readonly", "readonly");
-        // });
-        // {% endif %}
-
-        // LOCK POSITION
-        // FIXME: this should additionally be checked with saving the model
-        // {% if adminform.original.lock_position %}
-        // $("#{{ adminform.prefix }}-group.has_original").find(":input").each(function(){
-        //     $(this).attr("readonly", "readonly");
-        // });
-        // {% endif %}
 
     });
 })(grp.jQuery);

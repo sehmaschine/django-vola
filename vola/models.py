@@ -50,7 +50,7 @@ class Category(models.Model):
     Category for a ``Container``
 
     The ``Category`` separates different types of ``Containers``
-    and it only affects the admin interface
+    and it only affects the admin interface.
     """
 
     name = models.CharField(_("Name"), max_length=200, unique=True)
@@ -94,6 +94,8 @@ class Container(models.Model):
     transfer_date = models.DateTimeField(_("Transfer Date"), blank=True, null=True)
     transfer_container = models.ForeignKey("self", verbose_name=_("Transfer Container"), related_name="previews", blank=True, null=True) # not editable
 
+    # FIXME: validation script
+
     # admin
     site = models.ForeignKey(Site, verbose_name=_("Site"), blank=True, null=True) # currently not used
     position = models.PositiveIntegerField(_("Position"), blank=True, null=True)
@@ -133,8 +135,8 @@ class Group(models.Model):
     A ``Group`` consists of associated ``Plugins``.
 
     With the admin interface, each ``Group`` within a ``Container`` is
-    edited with a single page. If no ``Group`` is given, all ``Plugins``
-    are directly linked with a ``Container``.
+    edited on a single page. At least one ``Group`` is required with
+    each ``Container``.
     """
 
     container = models.ForeignKey(Container, related_name="groups")
@@ -146,6 +148,9 @@ class Group(models.Model):
     # plugins
     plugins_include = models.TextField(_("Plugins (Include)"), blank=True, help_text=_("List of app_label.model_name or app_label.* ... one entry per row."))
     plugins_exclude = models.TextField(_("Plugins (Exclude)"), blank=True, help_text=_("List of app_label.model_name or app_label.* ... one entry per row."))
+
+    # validation
+    validation = models.TextField(_("Validation"), blank=True, help_text=_("Path to validation methods ... one entry per row."))
 
     # admin
     menu = models.BooleanField(_("Menu"), default=1)
@@ -194,8 +199,8 @@ class Plugin(models.Model):
     model_name = models.CharField(_("Model Name"), max_length=100, blank=True)
 
     # admin
-    lock_content = models.BooleanField(_("Lock Content")) # currently not used
-    lock_position = models.BooleanField(_("Lock Position")) # currently not used
+    lock_content = models.BooleanField(_("Lock Content"))  # FIXME: remove
+    lock_position = models.BooleanField(_("Lock Position"))  # FIXME: remove
     position = models.PositiveIntegerField(_("Position"))
 
     # internal
@@ -222,7 +227,8 @@ class Plugin(models.Model):
     @property
     def template_name(self):
         """
-        Default template name equals model_name,
+        Default template name equals model_name.
+        
         Overwrite this with your custom plugin (if needed)
         """
         return self.model_name
@@ -230,6 +236,13 @@ class Plugin(models.Model):
     def get_template(self, context=None, *args, **kwargs):
         """
         Loading template for a plugin
+
+        Use this with your custom render method in order to
+        retrieve the plugins template:
+        t = self.get_template(context, *args, **kwargs)
+
+        Prefix/Suffix is used with templatetags in order to
+        use different templates for rendering the plugin.
         """
         prefix = kwargs.get("template_prefix", None)
         suffix = kwargs.get("template_suffix", None)
@@ -295,19 +308,16 @@ class Permission(models.Model):
     """
     Permission model for Container.
 
-    Manage the container
-    --------------------
+    * Manage the container
     This permission is needed in order to change container settings.
     Only assign this permission to an editor if you exactly know what you're doing.
     Usually, only superusers (or administrators) need this permission.
     
-    Manage previews
-    ---------------
+    * Manage previews
     This permission is needed in order to create and transfer previews.
     You probably assign this permission to every editor who works with vola.
     
-    Manage plugins
-    --------------
+    * Manage plugins
     This permission is needed to lock/unlock the content and/or position of a plugin.
     Depending on your usecase, you may (or may not) assign these permissions to editors.
     Most probably, only superusers (or administrators) need this permission.
