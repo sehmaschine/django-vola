@@ -15,15 +15,15 @@ from django.contrib.auth.models import User, Group as UserGroup
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from django.core.cache import cache
 
 # PROJECT IMPORTS
 from positions.fields import PositionField
-#from vola.cache import cache_callback
 
 
 class Language(models.Model):
     """
-    Languages for a ``Vola``
+    Languages for ``Vola``
     """
 
     name = models.CharField(_("Name"), max_length=7, choices=LANGUAGES, unique=True)
@@ -124,9 +124,6 @@ class Container(models.Model):
         if not self.preview:
             self.transfer_date = self.transfer_container = None
 
-# cache callback
-# post_save.connect(cache_callback, sender=Container)
-
 
 class Group(models.Model):
     """
@@ -176,9 +173,6 @@ class Group(models.Model):
         if self.slug:
             self.cache_key = self.slug
         super(Group, self).save(*args, **kwargs)
-
-# cache callback
-# post_save.connect(cache_callback, sender=Group)
     
 
 class Plugin(models.Model):
@@ -274,24 +268,6 @@ class Plugin(models.Model):
         """
         return None
 
-    # def clean(self, *args, **kwargs):
-    #     """
-    #     If content is locked, all values derive from the existing object
-    #     If position is locked and the plugin has been moved, we'll throw an error
-    #     """
-    #     instance = self.get_plugin
-    #     if instance and instance.lock_content and self.lock_content:
-    #         for f in self._meta.fields:
-    #             # FIXME: improve these hardcoded values
-    #             if f.name not in ["id", "plugin_ptr", "container", "group",\
-    #                 "app_label", "model_name",\
-    #                 "lock_content", "lock_position", "position",\
-    #                 "create_date", "update_date"]:
-    #                 setattr(self, f.attname, getattr(instance, f.attname))
-    #     # FIXME: check for locked position, which could be hard when deleting rows:
-    #     if instance and instance.lock_position and instance.position != self.position:
-    #         raise ValidationError()
-
     def save(self, *args, **kwargs):
         """
         Set ``app_label`` and ``model_name`` when saving a plugin
@@ -299,9 +275,12 @@ class Plugin(models.Model):
         self.app_label = self._meta.app_label
         self.model_name = self.__class__.__name__.lower()
         super(Plugin, self).save(*args, **kwargs)
-
-# cache callback
-# post_save.connect(cache_callback, sender=Plugin)
+        # clear cache_group
+        try:
+            cache_group_key = "%s-%s" % (self.container.slug, self.group.slug)
+            cache.delete(cache_group_key)
+        except:
+            pass
 
 
 class Permission(models.Model):
