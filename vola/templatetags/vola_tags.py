@@ -285,6 +285,7 @@ def vola_render_as_template(parser, token):
 
 vola_render_as_template = register.tag(vola_render_as_template)
 
+
 class CacheNode(Node):
     def __init__(self, nodelist, expire_time_var, fragment_name, container_slug, group_slug, vary_on):
         self.nodelist = nodelist
@@ -330,15 +331,15 @@ def do_cache(parser, token):
 
     Usage::
 
-        {% load cache %}
-        {% cache [expire_time] [fragment_name] [cached_group_prefix] %}
+        {% load vola_tags %}
+        {% vola_cache [expire_time] [fragment_name] [container_slug] [group_slug] %}
             .. some expensive processing ..
         {% endcache %}
 
     This tag also supports varying by a list of arguments::
 
         {% load cache %}
-        {% cache [expire_time] [fragment_name] [cached_group_prefix] [var1] [var2] .. %}
+        {% vola_cache [expire_time] [fragment_name] [container_slug] [group_slug] [var1] [var2] .. %}
             .. some expensive processing ..
         {% endcache %}
 
