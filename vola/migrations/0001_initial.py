@@ -58,6 +58,7 @@ class Migration(SchemaMigration):
             ('description', self.gf('django.db.models.fields.TextField')(blank=True)),
             ('plugins_include', self.gf('django.db.models.fields.TextField')(blank=True)),
             ('plugins_exclude', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('validation', self.gf('django.db.models.fields.TextField')(blank=True)),
             ('menu', self.gf('django.db.models.fields.BooleanField')(default=True)),
             ('position', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('create_date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
@@ -88,9 +89,6 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('vola', ['Plugin'])
 
-        # Adding unique constraint on 'Plugin', fields ['container', 'group', 'slug']
-        #db.create_unique('vola_plugin', ['container_id', 'group_id', 'slug'])
-
         # Adding model 'Permission'
         db.create_table('vola_permission', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -112,9 +110,6 @@ class Migration(SchemaMigration):
     def backwards(self, orm):
         # Removing unique constraint on 'Permission', fields ['container', 'user', 'group']
         db.delete_unique('vola_permission', ['container_id', 'user_id', 'group_id'])
-
-        # Removing unique constraint on 'Plugin', fields ['container', 'group', 'slug']
-        db.delete_unique('vola_plugin', ['container_id', 'group_id', 'slug'])
 
         # Removing unique constraint on 'Group', fields ['container', 'cache_key']
         db.delete_unique('vola_group', ['container_id', 'cache_key'])
@@ -223,7 +218,8 @@ class Migration(SchemaMigration):
             'plugins_include': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'position': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'slug': ('django.db.models.fields.SlugField', [], {'max_length': '200'}),
-            'update_date': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
+            'update_date': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
+            'validation': ('django.db.models.fields.TextField', [], {'blank': 'True'})
         },
         'vola.language': {
             'Meta': {'ordering': "['position']", 'object_name': 'Language'},
@@ -246,7 +242,7 @@ class Migration(SchemaMigration):
             'user': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'vola_permissions'", 'null': 'True', 'to': "orm['auth.User']"})
         },
         'vola.plugin': {
-            'Meta': {'ordering': "['position']", 'unique_together': "(('container', 'group', 'slug'),)", 'object_name': 'Plugin'},
+            'Meta': {'ordering': "['position']", 'object_name': 'Plugin'},
             'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
             'container': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'plugins'", 'to': "orm['vola.Container']"}),
             'create_date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
